@@ -1,0 +1,20 @@
+{
+  "token": "NTgxMTQwNzc2NDAzMjA2MTQ0.XOa9QA.Gbta8nHuHSufKJf7U4KdBEnyGgU",
+  "ownerID": "327402871668867072",
+  
+  "prefix": {
+    "prefix": "-"
+  },
+  "invite":"581140776403206144",
+
+  "mysql" : {
+    "host": "5.196.205.138",
+    "user": "Bots",
+    "port": "3306",
+    "password": "QYNQPteB7LA88NoT",
+    "database": "level"
+  }
+
+  
+
+}
