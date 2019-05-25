@@ -3,7 +3,7 @@ const client = new Discord.Client();
 const bot = new Discord.Client({disableEveryone: true});
 const fs = require('fs');
 const botconfig = require('./botconfig.json');
-const mysql = require('mysql');
+const db = JSON.parse(fs.readFileSync("./database.json", "utf8"));
 
 //--------------------------- Login --------------------------------------
 client.on('ready', () => {
@@ -39,100 +39,45 @@ client.on('ready',async () => {
       });
     });
   })
-//--------------------------- EVENT HANDLER -------------------------------------
-client.on('raw', event => {
-  const eventName = event.t;
-  if(eventName === 'GUILD_MEMBER_REMOVE') 
-  {
-con.query(`SELECT * FROM xp WHERE id = '${event.d.user.id}' AND guild = '${event.d.guild_id}'`, (err, rows) => {
-    if(err) throw err;
-  con.query(`SELECT * FROM xp WHERE id = '${event.d.user.id}' AND guild = '${event.d.guild_id}'`, (err, rows) => {
-    if(err) throw err;
-    let sql;
-    if(rows.length > 0){
-        sql = `DELETE FROM xp WHERE id = '${event.d.user.id}';`
-      } else return 
-    con.query(sql);
-});
-})
-  }
-  })
+
 //--------------------------- LEVEL SYSTEM --------------------------------------
 const talkedRecently = new Set();
 //--------------------------- MYSQL - Daten -------------------------------------
-  var coni = {
-    host: botconfig.mysql.host,
-    user: botconfig.mysql.user,
-    port: botconfig.mysql.port,
-    password: botconfig.mysql.password,
-    database: botconfig.mysql.database,
-    supportBigNumbers: true,
-    bigNumberStrings: true
-  
-  };
-  var con;
-  function handleDisconnect() {
-    con = mysql.createConnection(coni); // Recreate the connection, since
-                                                    // the old one cannot be reused.
-  
-    con.connect(function(err) { 
-      console.log("Datenbank Verbindung aktiv.")                // The server is either down
-      if(err) {                                     // or restarting (takes a while sometimes).
-        console.log('Fehler beim Verbindungsaufbau zur Datenbank <> Code #6577', err);
-        setTimeout(handleDisconnect, 2000); // We introduce a delay before attempting to reconnect,
-      }                                     // to avoid a hot loop, and to allow our node script to
-    });                                     // process asynchronous requests in the meantime.
-                                            // If you're also serving http, display a 503 error.
-    con.on('error', function(err) {
-      console.log('Datenbank Fehler  <> Code #6344', err);
-      if(err.code === 'PROTOCOL_CONNECTION_LOST') { // Connection to the MySQL server is usually
-        handleDisconnect();                         // lost due to either server restart, or a
-      } else {                                      // connnection idle timeout (the wait_timeout
-        throw err;                                  // server variable configures this)
-      }
-    });
-  }
-  handleDisconnect();
 
-  function generateXp() {
-    let min = 2;
-    let max = 20;
-  
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  
-  }
+    // if the user is not on db add the user and change his values to 0
+    if (!db[message.author.id]) db[message.author.id] = {
+        xp: 0,
+        level: 0
+      };
+    db[message.author.id].xp++;
+    let userInfo = db[message.author.id];
+    if(userInfo.xp > 100) {
+        userInfo.level++
+        userInfo.xp = 0
+     message.channel.send("HGW, du bist nun Level "+userInfo.level+"! "+message.author+"")
+    }
+      fs.writeFile("./database.json", JSON.stringify(db), (x) => {
+        if (x) console.error(x)
+      });
 
-  client.on("message", message => {
-    if(message.author.bot || message.channel.type === "dm") return;
-
-
-    if (talkedRecently.has(message.author.id)) return
-  con.query(`SELECT * FROM xp WHERE id = '${message.author.id}' AND guild = '${message.guild.id}'`, (err, rows) => {
-     if(err) throw err;
-    if(message.author.bot) return;
-  
-  con.query(`SELECT * FROM xp WHERE id = '${message.author.id}' AND guild = '${message.guild.id}'`, (err, rows) => {
-      if(err) throw err;
-      let sql;
-      if(rows.length < 1){
-        sql = `INSERT INTO xp (guild , id, xp) VALUES ('${message.guild.id}', '${message.author.id}', ${generateXp()})`
-      } else{
-      let xp = rows[0].xp;
-        sql = `UPDATE xp SET xp = ${xp + generateXp()} WHERE id = '${message.author.id}' AND guild = '${message.guild.id}'`;
-      }
-  con.query(sql);
-    });
-  
-
-  })
-    talkedRecently.add(message.author.id);
-    setTimeout(() => {
-    talkedRecently.delete(message.author.id);
-    }, 60000);
-  })
-
-
-
+      if(command === "rank") {
+        let userInfo = db[message.author.id];
+        let member = message.mentions.members.first();
+        let embed = new Discord.RichEmbed()
+        .setColor(0x4286f4)
+        .addField("Level", userInfo.level)
+        .addField("XP", userInfo.xp+" | 100")
+        if(!member) return message.channel.send(embed)
+        let memberInfo = db[member.id]
+        let embed2 = new Discord.RichEmbed()
+        .setColor(0x4286f4)
+        .addField("Level", memberInfo.level)
+        .addField("XP", memberInfo.xp+" | 100")
+        message.channel.send(embed2)
+    .catch(error => message.channel.send(error)
+          
+           )}    
+    
 
 //--------------------------- MESSAGE EVENTS --------------------------------------
 //Server - Message
