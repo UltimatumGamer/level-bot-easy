@@ -7,14 +7,6 @@
   },
   "invite":"581140776403206144",
 
-  "mysql" : {
-    "host": "5.196.205.138",
-    "user": "Bots",
-    "port": "3306",
-    "password": "QYNQPteB7LA88NoT",
-    "database": "level"
-  }
-
   
 
 }
