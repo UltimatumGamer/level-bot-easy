@@ -88,6 +88,21 @@ const talkedRecently = new Set();
     let messageArray = message.content.split(" ")
     let cmd = messageArray[0].toLowerCase();
     let args = messageArray.slice(1);
+      
+     if (!db[message.author.id]) db[message.author.id] = {
+        xp: 0,
+        level: 0
+      };
+    db[message.author.id].xp++;
+    let userInfo = db[message.author.id];
+    if(userInfo.xp > 100) {
+        userInfo.level++
+        userInfo.xp = 0
+     message.channel.send(`${message.author}, du bist nun Level ${userInfo.level}!`)
+    }
+      fs.writeFile("./database.json", JSON.stringify(db), (x) => {
+        if (x) console.error(x)
+      });
 
       let commandfile = client.commands.get(cmd.slice(prefixi.length)) || client.commands.get(client.aliases.get(cmd.slice(prefixi.length)))
       if(commandfile) commandfile.run(client, bot, message, args, con)
